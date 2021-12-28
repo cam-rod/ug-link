@@ -4,3 +4,9 @@ This project aims to create a simple Java program that locates an unloaded under
 
 Currently in alpha development. This project is made available under the [MIT License](LICENSE).
 
+## Requirements
+
+- Java ???
+- [Powershell 7](https://docs.microsoft.com/en-ca/powershell/scripting/install/installing-powershell)
+- [Posh-SSH](https://github.com/darkoperator/Posh-SSH)
+
