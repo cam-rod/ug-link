@@ -7,6 +7,6 @@ Currently in alpha development. This project is made available under the [MIT Li
 ## Requirements
 
 - Java ???
-- [Powershell 7 for Windows](https://docs.microsoft.com/en-ca/powershell/scripting/install/installing-powershell)
-- [Posh-SSH](https://github.com/darkoperator/Posh-SSH)
+- Windows 10/11
+- [plink, from PuTTY](https://github.com/darkoperator/Posh-SSH)
 
