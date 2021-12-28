@@ -9,6 +9,7 @@ public class UGLink {
     private static String username;
     private static String password;
     public static int selectedServer;
+    public ClassLoader classLoader;
 
     public static void main(String[] args) {
         Console credLoader = System.console();
@@ -20,6 +21,7 @@ public class UGLink {
         try {
             Process unloadedProcess =  unloadedBuilder.start();
             String serverLoad = selectServer(unloadedProcess);
+            System.out.println(serverLoad); // TODO: remove when implemented
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -27,23 +29,25 @@ public class UGLink {
     }
 
     public static void getCredentials(Console credLoader){
-        System.out.println("Enter your EECG username: ");
-        username = credLoader.readLine();
-        System.out.println("Enter your EECG password:");
-        password = Arrays.toString(credLoader.readPassword());
+        username = credLoader.readLine("Enter your EECG username: ");
+        password = new String(credLoader.readPassword("Enter your EECG password: "));
     }
 
     // Check for unloaded servers on ug251
     public static ProcessBuilder getUnloadedServers() {
-        ProcessBuilder unloadedBuilder = new ProcessBuilder("pwsh", ".\\Find-UnloadedServer.ps1");
-        unloadedBuilder.directory(new File("..\\..\\..\\..\\resources"));
+        ProcessBuilder unloadedBuilder = new ProcessBuilder("pwsh", "Find-UnloadedServer.ps1");
         Map<String, String> envVars = unloadedBuilder.environment();
         envVars.put("UG_LINK_USER", username);
         envVars.put("UG_LINK_PASS", password);
         return unloadedBuilder;
     }
 
-    public static String selectServer(Process unloadedProcess) {
+    public static String selectServer(Process unloadedProcess) throws IOException {
+        String outLine;
         BufferedReader unloadedOutput = new BufferedReader(new InputStreamReader(unloadedProcess.getInputStream()));
+        while ((outLine = unloadedOutput.readLine()) != null) {
+            System.out.println(outLine);
+        }
+        return "\n";
     }
 }
