@@ -21,32 +21,42 @@ public class UGLink {
         getCredentials(credLoader);
         try {
             // Authenticate fingerprint, then retrieve servers
-            rt.exec("echo yes | " + genSSHCmd("ug251", "exit", false) + " exit");
-            Process unloadedProcess = rt.exec(genSSHCmd("ug251", "ruptime -rl", true));
+            rt.exec(genSSHCmd("ug251","exit", "echo yes", false));
+            Process unloadedProcess = rt.exec(genSSHCmd("ug251", "ruptime -rl", null, true));
             sortServers(unloadedProcess);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         // Launch SSH session on least loaded server
-        //Process serverConnect = Runtime.getRuntime().exec(
-        //System.out.println("pwsh -NoExit -Command ssh " + username + "@" + sortedServers.firstEntry().getValue() + ".eecg.utoronto.ca");
+        try {
+            rt.exec(genSSHCmd(sortedServers.firstEntry().getValue(),"exit", "echo yes", false));
+            rt.exec(genSSHCmd(sortedServers.firstEntry().getValue(), null, null, false)).waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Generates commands used to form SSH connections
      *
      * @param server the EECG server to connect to
-     * @param command the command to run
+     * @param command the command to run, if non-null
+     * @param pipe output to pipe into the plink program, if non-null
      * @param batch whether the session should run in batch mode
      * @return the completed base command
      */
-    public static String genSSHCmd(String server, String command, boolean batch) {
+    public static String genSSHCmd(String server, String command, String pipe, boolean batch) {
+        String sshCmd = "plink " + username + "@" + server + ".eecg.utoronto.ca ";
+        if (pipe != null) { sshCmd = pipe + " | " + sshCmd; }
         if (batch) {
-            return "plink " + username + "@" + server + ".eecg.utoronto.ca -batch -pw " + password + " " + command;
+            sshCmd = sshCmd.concat("-batch ");
         } else {
-            return "cmd /c plink " + username + "@" + server + ".eecg.utoronto.ca -pw " + password;
+            sshCmd = "cmd /c " + sshCmd;
         }
+        sshCmd = sshCmd.concat("-pw " + password);
+        if(command != null) { sshCmd = sshCmd.concat(" " + command); }
+        return sshCmd;
     }
 
     public static void getCredentials(Console credLoader){
@@ -58,7 +68,6 @@ public class UGLink {
         String outLine;
         BufferedReader unloadedOutput = new BufferedReader(new InputStreamReader(unloadedProcess.getInputStream()));
         while ((outLine = unloadedOutput.readLine()) != null) {
-            System.out.println(outLine.length());
             String serverName = outLine.substring(0, 5).trim();
             String[] loadAvgStr = outLine.substring(48).split(",\\s+");
 
@@ -69,6 +78,5 @@ public class UGLink {
             double loadAvg = (0.5 * allAvgs[0]) + (0.3 * allAvgs[1]) + (0.2 * allAvgs[2]);
             sortedServers.put(loadAvg, serverName);
         }
-        System.out.println(sortedServers);
     }
 }
