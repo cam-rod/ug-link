@@ -21,6 +21,7 @@ public class UGLink {
         getCredentials(credLoader);
         try {
             // Authenticate fingerprint, then retrieve servers
+            System.out.println("Loading EECG servers...");
             rt.exec(genSSHCmd("ug251","exit", "echo yes", false));
             Process unloadedProcess = rt.exec(genSSHCmd("ug251", "ruptime -rl", null, true));
             sortServers(unloadedProcess);
@@ -30,8 +31,11 @@ public class UGLink {
 
         // Launch SSH session on least loaded server
         try {
-            rt.exec(genSSHCmd(sortedServers.firstEntry().getValue(),"exit", "echo yes", false));
-            rt.exec(genSSHCmd(sortedServers.firstEntry().getValue(), null, null, false)).waitFor();
+            System.out.println("Connecting to " + sortedServers.firstEntry().getValue() + "...");
+            Process a = rt.exec(genSSHCmd("ug168","uname -r", "echo yes", false));
+            System.out.println("Authenticated!");
+            String launchStr = "putty " + username + "@" + sortedServers.firstEntry().getValue() + ".eecg.utoronto.ca -pw " + password;
+            rt.exec(launchStr).waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
