@@ -10,3 +10,7 @@ Currently in alpha development. This project is made available under the [MIT Li
 - Windows 10/11 (the project may work if recompiled for other platforms)
 - [PuTTY](https://www.putty.org/)
 
+## Testing
+
+Build the project with the default `gradle build` command. `gradle jar` will compile a Java archive for the project. The library uses `Console.readPassword()`, so the program must be run from the terminal. Use the batch or Bash files in the test folder to launch the compiled project for debugging, which you can then attach to from an IDE like IntelliJ, or from the terminal with `jdb`.
+

@@ -14,29 +14,10 @@ public class UGLink {
     public static void main(String[] args) {
         // TODO: Add support for ECF machines
         Console credLoader = System.console();
-        Runtime rt = Runtime.getRuntime();
+        rt = Runtime.getRuntime();
 
-        getCredentials(credLoader);
-        try {
-            // Authenticate fingerprint, then retrieve servers
-            System.out.println("Loading EECG servers...");
-            rt.exec(genSSHCmd("ug251","exit", "echo yes", false));
-            Process unloadedProcess = rt.exec(genSSHCmd("ug251", "ruptime -rl", null, true));
-            sortServers(unloadedProcess);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Launch SSH session on least loaded server
-        try {
-            System.out.println("Connecting to " + sortedServers.firstEntry().getValue() + "...");
-            rt.exec(genSSHCmd(sortedServers.firstEntry().getValue(),"uname -r", "echo yes", false));
-            System.out.println("Authenticated!");
-            String launchStr = "putty " + username + "@" + sortedServers.firstEntry().getValue() + ".eecg.utoronto.ca -pw " + password;
-            rt.exec(launchStr).waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        EECG sessionEECG = new EECG(credLoader, rt);
+        sessionEECG.connect();
     }
 
     /**

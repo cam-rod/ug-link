@@ -23,7 +23,7 @@ public class EECG {
         loadCredentials(credLoader);
     }
 
-    class plinkEECGConsumer extends Thread {
+    private class plinkEECGConsumer extends Thread {
         private final BufferedReader reader;
         private final ArrayList<String> output;
 
@@ -147,9 +147,8 @@ public class EECG {
     private ArrayList<String> runPlinkCmd(String command) {
         ArrayList<String> output = new ArrayList<>();
         ArrayList<String> error = new ArrayList<>();
-        Process p = null;
         try {
-            p = rt.exec(command);
+            Process p = rt.exec(command);
             plinkEECGConsumer eecgOutput = new plinkEECGConsumer(p, false, output);
             plinkEECGConsumer eecgError = new plinkEECGConsumer(p, false, error);
             eecgOutput.start();
@@ -161,15 +160,15 @@ public class EECG {
             e.printStackTrace();
         }
 
-        if (error.get(1).startsWith("Host does not exist")) {
-            status = plinkError.SERVER_NOT_AVAILABLE;
-            return null;
-        } else if (error.get(1).startsWith("Access denied") || error.get(11).startsWith("Access denied")) {
-            status = plinkError.INVALID_CREDENTIALS;
-            return null;
-        } else {
-            status = plinkError.GOOD;
-            return output;
-        }
+        if (error.size() != 0) {
+            if (error.get(1).startsWith("Host does not exist")) {
+                status = plinkError.SERVER_NOT_AVAILABLE;
+                return null;
+            } else if (error.get(1).startsWith("Access denied") || error.get(11).startsWith("Access denied")) {
+                status = plinkError.INVALID_CREDENTIALS;
+                return null;
+            }
+        } else status = plinkError.GOOD;
+        return output;
     }
 }
