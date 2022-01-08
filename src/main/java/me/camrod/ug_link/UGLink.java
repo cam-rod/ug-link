@@ -1,23 +1,21 @@
 package me.camrod.ug_link;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class UGLink {
 
     private static String username;
     private static String password;
+    private static Runtime rt;
     public static TreeMap<Double, String> sortedServers = new TreeMap<>();
 
     public static void main(String[] args) {
-        /*TODO
-        *  - Add support for ECF machines
-        *  - Split ECF and EECG machines into separate classes or organize as needed
-        */
+        // TODO: Add support for ECF machines
         Console credLoader = System.console();
         Runtime rt = Runtime.getRuntime();
 
-        // TODO: check for valid inputs, loop back if server fails it
         getCredentials(credLoader);
         try {
             // Authenticate fingerprint, then retrieve servers
@@ -32,7 +30,7 @@ public class UGLink {
         // Launch SSH session on least loaded server
         try {
             System.out.println("Connecting to " + sortedServers.firstEntry().getValue() + "...");
-            Process a = rt.exec(genSSHCmd("ug168","uname -r", "echo yes", false));
+            rt.exec(genSSHCmd(sortedServers.firstEntry().getValue(),"uname -r", "echo yes", false));
             System.out.println("Authenticated!");
             String launchStr = "putty " + username + "@" + sortedServers.firstEntry().getValue() + ".eecg.utoronto.ca -pw " + password;
             rt.exec(launchStr).waitFor();
@@ -81,6 +79,20 @@ public class UGLink {
             }
             double loadAvg = (0.5 * allAvgs[0]) + (0.3 * allAvgs[1]) + (0.2 * allAvgs[2]);
             sortedServers.put(loadAvg, serverName);
+        }
+    }
+
+    public static void sortServers(ArrayList<String> servers, TreeMap<Double, String> finalServers) {
+        for (String entry : servers) {
+            String serverName = entry.substring(0, 5).trim();
+            String[] loadAvgStr = entry.substring(48).split(",\\s+");
+
+            double[] allAverages = new double[3];
+            for(int i = 0; i < 3; i++) {
+                allAverages[i] = Double.parseDouble(loadAvgStr[i]);
+            }
+            double loadAvg = (0.5 * allAverages[0]) + (0.3 * allAverages[1]) + (0.2 * allAverages[2]);
+            finalServers.put(loadAvg, serverName);
         }
     }
 }
